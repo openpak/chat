@@ -20,6 +20,12 @@ jobs:
       REGISTRY_AUTH_FILE: ${{ runner.temp }}/auth.json # job-scoped login; never the runner user's own
     steps:
       - uses: actions/checkout@v4
+      - name: Scratch in the workspace, not the runner's shared /tmp
+        # /tmp is a RAM disk every build on the machine shares; when it filled on
+        # 2026-09-24 a compiler died and a job hung for hours instead of failing.
+        run: |
+          mkdir -p "$GITHUB_WORKSPACE/.tmp"
+          echo "TMPDIR=$GITHUB_WORKSPACE/.tmp" >> "$GITHUB_ENV"
       - run: echo "${{ secrets.GITHUB_TOKEN }}" | podman login ghcr.io -u "${{ github.actor }}" --password-stdin
       - run: |
           set -e
@@ -31,3 +37,6 @@ jobs:
           for t in $TAGS; do podman manifest push --all "$IMG:build" "docker://$IMG:$t"; done
           podman manifest rm "$IMG:build"
           echo "pushed $IMG: $TAGS"
+      - name: Clear scratch
+        if: always()
+        run: rm -rf "$GITHUB_WORKSPACE/.tmp"
