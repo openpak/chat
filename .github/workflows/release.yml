@@ -16,8 +16,6 @@ permissions:
 jobs:
   image:
     runs-on: [self-hosted, linux, podman]
-    env:
-      REGISTRY_AUTH_FILE: ${{ runner.temp }}/auth.json # job-scoped login; never the runner user's own
     steps:
       - uses: actions/checkout@v4
       - name: Scratch in the runner's temp, not the machine's shared /tmp
@@ -26,7 +24,11 @@ jobs:
         run: |
           mkdir -p "$RUNNER_TEMP/scratch"
           echo "TMPDIR=$RUNNER_TEMP/scratch" >> "$GITHUB_ENV"
+      # REGISTRY_AUTH_FILE lives on the steps: the runner context does not exist in
+      # job-level env, and a workflow that cannot parse dispatches nothing.
       - run: echo "${{ secrets.GITHUB_TOKEN }}" | podman login ghcr.io -u "${{ github.actor }}" --password-stdin
+        env:
+          REGISTRY_AUTH_FILE: ${{ runner.temp }}/auth.json # job-scoped login; never the runner user's own
       - run: |
           set -e
           IMG="ghcr.io/${{ github.repository }}"
@@ -37,6 +39,8 @@ jobs:
           for t in $TAGS; do podman manifest push --all "$IMG:build" "docker://$IMG:$t"; done
           podman manifest rm "$IMG:build"
           echo "pushed $IMG: $TAGS"
+        env:
+          REGISTRY_AUTH_FILE: ${{ runner.temp }}/auth.json
       - name: Clear scratch
         if: always()
         run: rm -rf "$RUNNER_TEMP/scratch"
