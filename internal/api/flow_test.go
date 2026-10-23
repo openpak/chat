@@ -263,3 +263,50 @@ func TestChatFlow(t *testing.T) {
 		t.Fatalf("unauthenticated: %d", resp2.StatusCode)
 	}
 }
+
+// Account erasure: every message to or from the account goes, both sides of
+// each conversation, and nobody else's; a repeat is a no-op.
+func TestEraseAccountMessages(t *testing.T) {
+	srv, fake, key := setup(t)
+	a := "11111111-1111-1111-1111-111111111111"
+	b := "22222222-2222-2222-2222-222222222222"
+	c := "33333333-3333-3333-3333-333333333333"
+	fake.friends = append(fake.friends, [2]string{b, c})
+	mux := http.NewServeMux()
+	srv.Register(mux)
+	ts := httptest.NewServer(mux)
+	defer ts.Close()
+	do := func(method, path, body string) (int, map[string]any) {
+		req, _ := http.NewRequest(method, ts.URL+path, strings.NewReader(body))
+		req.Header.Set("X-Internal-Key", key)
+		resp, err := http.DefaultClient.Do(req)
+		if err != nil {
+			t.Fatal(err)
+		}
+		defer resp.Body.Close()
+		out := map[string]any{}
+		_ = json.NewDecoder(resp.Body).Decode(&out)
+		return resp.StatusCode, out
+	}
+	for _, m := range [][2]string{{a, b}, {b, a}, {b, c}} {
+		if code, _ := do("POST", "/internal/accounts/"+m[0]+"/messages/"+m[1], `{"body":"hi"}`); code != 201 {
+			t.Fatalf("send %v: %d", m, code)
+		}
+	}
+	if code, out := do("DELETE", "/internal/accounts/"+a+"/messages", ""); code != 200 || out["deleted"] != float64(2) {
+		t.Fatalf("erase = %d %v, want 200 deleted 2", code, out)
+	}
+	if _, out := do("GET", "/internal/accounts/"+b+"/conversations", ""); len(out["conversations"].([]any)) != 1 {
+		t.Fatalf("b's conversations after erasing a: %v", out)
+	}
+	if code, out := do("DELETE", "/internal/accounts/"+a+"/messages", ""); code != 200 || out["deleted"] != float64(0) {
+		t.Fatalf("repeat erase = %d %v", code, out)
+	}
+	if code, _ := do("DELETE", "/internal/accounts/not-a-uuid/messages", ""); code != 400 {
+		t.Fatalf("bad id = %d, want 400", code)
+	}
+	req, _ := http.NewRequest("DELETE", ts.URL+"/internal/accounts/"+a+"/messages", nil)
+	if resp, err := http.DefaultClient.Do(req); err != nil || resp.StatusCode != 401 {
+		t.Fatalf("erase without the internal key must be refused: %v %v", resp, err)
+	}
+}

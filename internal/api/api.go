@@ -6,6 +6,7 @@
 //	GET  /internal/accounts/{account}/messages/{peer}?after=&limit=   history, oldest first
 //	POST /internal/accounts/{account}/messages/{peer}          {"body","kind","dedup_key"} -> 201
 //	GET  /internal/messages/{id}                               one message
+//	DELETE /internal/accounts/{account}/messages               account erasure: every message to or from it -> 200 {"deleted":n}
 //	GET  /healthz
 package api
 
@@ -31,6 +32,7 @@ func (s *Server) Register(mux *http.ServeMux) {
 	a("GET /internal/accounts/{account}/messages/{peer}", s.history)
 	a("POST /internal/accounts/{account}/messages/{peer}", s.send)
 	a("GET /internal/messages/{id}", s.message)
+	a("DELETE /internal/accounts/{account}/messages", s.eraseAccount)
 	mux.HandleFunc("GET /healthz", func(w http.ResponseWriter, _ *http.Request) { w.WriteHeader(200) })
 }
 
@@ -71,6 +73,8 @@ func failWith(w http.ResponseWriter, err error) {
 		jsonOut(w, http.StatusBadRequest, map[string]any{"error": "empty message"})
 	case errors.Is(err, service.ErrTooLarge):
 		jsonOut(w, http.StatusRequestEntityTooLarge, map[string]any{"error": "message too large"})
+	case errors.Is(err, service.ErrBadAccount):
+		jsonOut(w, http.StatusBadRequest, map[string]any{"error": "account ids are UUIDs"})
 	case errors.Is(err, service.ErrSameTalker):
 		jsonOut(w, http.StatusBadRequest, map[string]any{"error": "a message needs two accounts"})
 	case errors.Is(err, store.ErrNotFound):
@@ -140,4 +144,15 @@ func (s *Server) message(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	jsonOut(w, 200, messageOf(m))
+}
+
+// eraseAccount is the account-erasure finaliser's call once the deletion
+// grace period is over; nothing user-facing reaches it. A repeat is a 200.
+func (s *Server) eraseAccount(w http.ResponseWriter, r *http.Request) {
+	n, err := s.Svc.EraseAccount(r.Context(), r.PathValue("account"))
+	if err != nil {
+		failWith(w, err)
+		return
+	}
+	jsonOut(w, 200, map[string]any{"deleted": n})
 }

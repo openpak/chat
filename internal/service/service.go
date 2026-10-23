@@ -8,6 +8,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"regexp"
 	"strings"
 	"time"
 
@@ -27,6 +28,7 @@ var (
 	ErrEmptyBody  = errors.New("chat: empty message")
 	ErrTooLarge   = errors.New("chat: message too large")
 	ErrSameTalker = errors.New("chat: a message needs two accounts")
+	ErrBadAccount = errors.New("chat: account ids are UUIDs")
 )
 
 type Service struct {
@@ -90,4 +92,14 @@ func (s *Service) Conversation(ctx context.Context, account, peer string, afterI
 
 func (s *Service) Conversations(ctx context.Context, account string) ([]store.ConversationHead, error) {
 	return store.Conversations(ctx, s.Store, account)
+}
+
+var uuidRE = regexp.MustCompile(`^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$`)
+
+// EraseAccount deletes every message to or from the account. Idempotent.
+func (s *Service) EraseAccount(ctx context.Context, account string) (int64, error) {
+	if !uuidRE.MatchString(account) {
+		return 0, ErrBadAccount
+	}
+	return store.DeleteForAccount(ctx, s.Store, account)
 }

@@ -2,6 +2,12 @@
 
 `git log` stays the source of truth; this file is the readable summary.
 
+## Unreleased
+
+- `DELETE /internal/accounts/{account}/messages` for account erasure: every message the account
+  sent or received goes (both sides of each conversation). The website's erasure finaliser calls
+  it once the deletion grace period is over; a repeat is a no-op.
+
 ## v0.1.0 — 2026-09-24
 
 - First release: the neutral message store. One Postgres table of messages (migrated at

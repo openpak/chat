@@ -191,6 +191,13 @@ func Conversations(ctx context.Context, q pgxQuerier, account string) ([]Convers
 }
 
 // pgxQuerier is what pgxpool.Pool and pgx.Tx both satisfy.
+// DeleteForAccount erases every message the account sent or received (account
+// erasure): a conversation with an erased account goes from both sides.
+func DeleteForAccount(ctx context.Context, pool *pgxpool.Pool, account string) (int64, error) {
+	tag, err := pool.Exec(ctx, `DELETE FROM messages WHERE from_account = $1 OR to_account = $1`, account)
+	return tag.RowsAffected(), err
+}
+
 type pgxQuerier interface {
 	QueryRow(ctx context.Context, sql string, args ...any) pgx.Row
 	Query(ctx context.Context, sql string, args ...any) (pgx.Rows, error)

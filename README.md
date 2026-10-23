@@ -25,6 +25,7 @@ GET  /internal/accounts/{account}/conversations                   one row per pe
 GET  /internal/accounts/{account}/messages/{peer}?after=&limit=   history, oldest first
 POST /internal/accounts/{account}/messages/{peer}                 {"body","kind","dedup_key"} -> 201
 GET  /internal/messages/{id}
+DELETE /internal/accounts/{account}/messages                     account erasure: every message to or from it -> {"deleted":n}
 ```
 
 `kind` is `text` (default), `painting`, `screenshot` or `app_data` — the four
