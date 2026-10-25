@@ -15,7 +15,7 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/metadata"
 
-	accountv1 "openpak/chat/internal/accountpb"
+	accountv1 "github.com/openpak/account-api/openpak/account/v1"
 )
 
 type Client struct {

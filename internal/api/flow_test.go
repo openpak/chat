@@ -21,7 +21,7 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/test/bufconn"
 
-	accountv1 "openpak/chat/internal/accountpb"
+	accountv1 "github.com/openpak/account-api/openpak/account/v1"
 	api "openpak/chat/internal/api"
 	"openpak/chat/internal/core"
 	"openpak/chat/internal/service"
