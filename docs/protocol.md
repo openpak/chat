@@ -40,3 +40,7 @@ is not announced twice.
   consoles learn of it at their next sync, as they always have.
 - **Event log holds no bodies.** The core's event says "account X has message
   123"; receivers fetch the content here.
+
+## Store
+
+One Postgres table of `{from_account, to_account, kind, body, sent_at}`. Every send is announced on the account core's event stream (`type = "message"`, `subject_id` = the message id) so each family's adapter delivers it in its own transport; a message sent on the website is the same row a Wii U surface reads. Nothing console-shaped is stored.

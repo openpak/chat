@@ -28,10 +28,9 @@ go run ./cmd/chat
 ## Docs
 
 - [Protocol](docs/protocol.md)
-- [Evidence](docs/evidence.md)
 - [Deploy](docs/deploy.md)
-- [Notes](docs/notes.md)
-- [Docs index](docs/README.md)
+
+PRDs: openpak/prds (private)
 
 ## Licence
 
