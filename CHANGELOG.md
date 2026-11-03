@@ -2,7 +2,7 @@
 
 `git log` stays the source of truth; this file is the readable summary.
 
-## Unreleased
+## v0.1.1 — 2026-11-03
 
 - `DELETE /internal/accounts/{account}/messages` for account erasure: every message the account
   sent or received goes (both sides of each conversation). The website's erasure finaliser calls
