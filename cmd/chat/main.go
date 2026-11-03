@@ -17,6 +17,8 @@ import (
 	api "openpak/chat/internal/api"
 	"openpak/chat/internal/core"
 	"openpak/chat/internal/grpcapi"
+	"openpak/chat/internal/grpclog"
+	"openpak/chat/internal/httplog"
 	"openpak/chat/internal/service"
 	"openpak/chat/internal/store"
 	chatv1 "openpak/chat/proto/openpak/chat/v1"
@@ -50,7 +52,7 @@ func main() {
 	mux := http.NewServeMux()
 	(&api.Server{Svc: svc, Key: internalKey}).Register(mux)
 	httpAddr := env("CHAT_HTTP_ADDR", "127.0.0.1:20130")
-	httpSrv := &http.Server{Addr: httpAddr, Handler: mux}
+	httpSrv := &http.Server{Addr: httpAddr, Handler: httplog.Middleware(mux)}
 	go func() {
 		log.Printf("chat: http on %s", httpAddr)
 		log.Fatal(httpSrv.ListenAndServe())
@@ -62,7 +64,7 @@ func main() {
 	if err != nil {
 		log.Fatalf("chat: grpc listen: %v", err)
 	}
-	gs := grpc.NewServer()
+	gs := grpc.NewServer(grpc.ChainUnaryInterceptor(grpclog.Unary))
 	chatv1.RegisterChatServer(gs, grpcapi.New(svc, internalKey))
 	go func() {
 		log.Printf("chat: grpc on %s", grpcAddr)

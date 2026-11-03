@@ -2,6 +2,9 @@
 
 `git log` stays the source of truth; this file is the readable summary.
 
+## v0.2.0 — 2026-11-03
+- Per-request logging: one slog line per HTTP request (method, path, status, ms) and per gRPC unary call (method, code, ms) on stderr via internal/httplog. Query strings, headers and bodies are never logged; /healthz and /metrics are skipped.
+
 ## v0.1.1 — 2026-11-03
 
 - `DELETE /internal/accounts/{account}/messages` for account erasure: every message the account
