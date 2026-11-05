@@ -19,10 +19,13 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	Chat_SendMessage_FullMethodName       = "/openpak.chat.v1.Chat/SendMessage"
-	Chat_GetMessage_FullMethodName        = "/openpak.chat.v1.Chat/GetMessage"
-	Chat_ListMessages_FullMethodName      = "/openpak.chat.v1.Chat/ListMessages"
-	Chat_ListConversations_FullMethodName = "/openpak.chat.v1.Chat/ListConversations"
+	Chat_SendMessage_FullMethodName         = "/openpak.chat.v1.Chat/SendMessage"
+	Chat_GetMessage_FullMethodName          = "/openpak.chat.v1.Chat/GetMessage"
+	Chat_ListMessages_FullMethodName        = "/openpak.chat.v1.Chat/ListMessages"
+	Chat_ListConversations_FullMethodName   = "/openpak.chat.v1.Chat/ListConversations"
+	Chat_SendTitleMessage_FullMethodName    = "/openpak.chat.v1.Chat/SendTitleMessage"
+	Chat_ListTitleMessages_FullMethodName   = "/openpak.chat.v1.Chat/ListTitleMessages"
+	Chat_DeleteTitleMessages_FullMethodName = "/openpak.chat.v1.Chat/DeleteTitleMessages"
 )
 
 // ChatClient is the client API for Chat service.
@@ -49,6 +52,18 @@ type ChatClient interface {
 	ListMessages(ctx context.Context, in *ListMessagesRequest, opts ...grpc.CallOption) (*ListMessagesResponse, error)
 	// One row per peer, newest message per peer.
 	ListConversations(ctx context.Context, in *ListConversationsRequest, opts ...grpc.CallOption) (*ListConversationsResponse, error)
+	// Title messages (gap M1-M5, docs/protocol.md "Title messages"): messages a
+	// game sends between its own players (NEX Messaging 0x17 / MessageDelivery
+	// 0x1B). A separate kind in a separate table: never in the social chat
+	// (ListMessages, ListConversations, GetMessage never see them), not
+	// friendship-gated (only a block between the two accounts refuses), never
+	// announced on the event stream (instant delivery is the adapter's job),
+	// binary bodies, expiry by lifetime_s, scoped by (title, network).
+	SendTitleMessage(ctx context.Context, in *SendTitleMessageRequest, opts ...grpc.CallOption) (*SendTitleMessageResponse, error)
+	// A recipient's inbox in one title: to_account or to_room, oldest first.
+	ListTitleMessages(ctx context.Context, in *ListTitleMessagesRequest, opts ...grpc.CallOption) (*ListTitleMessagesResponse, error)
+	// Deletes messages from a recipient's inbox (ids, or all of it).
+	DeleteTitleMessages(ctx context.Context, in *DeleteTitleMessagesRequest, opts ...grpc.CallOption) (*DeleteTitleMessagesResponse, error)
 }
 
 type chatClient struct {
@@ -99,6 +114,36 @@ func (c *chatClient) ListConversations(ctx context.Context, in *ListConversation
 	return out, nil
 }
 
+func (c *chatClient) SendTitleMessage(ctx context.Context, in *SendTitleMessageRequest, opts ...grpc.CallOption) (*SendTitleMessageResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(SendTitleMessageResponse)
+	err := c.cc.Invoke(ctx, Chat_SendTitleMessage_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *chatClient) ListTitleMessages(ctx context.Context, in *ListTitleMessagesRequest, opts ...grpc.CallOption) (*ListTitleMessagesResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ListTitleMessagesResponse)
+	err := c.cc.Invoke(ctx, Chat_ListTitleMessages_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *chatClient) DeleteTitleMessages(ctx context.Context, in *DeleteTitleMessagesRequest, opts ...grpc.CallOption) (*DeleteTitleMessagesResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(DeleteTitleMessagesResponse)
+	err := c.cc.Invoke(ctx, Chat_DeleteTitleMessages_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // ChatServer is the server API for Chat service.
 // All implementations must embed UnimplementedChatServer
 // for forward compatibility.
@@ -123,6 +168,18 @@ type ChatServer interface {
 	ListMessages(context.Context, *ListMessagesRequest) (*ListMessagesResponse, error)
 	// One row per peer, newest message per peer.
 	ListConversations(context.Context, *ListConversationsRequest) (*ListConversationsResponse, error)
+	// Title messages (gap M1-M5, docs/protocol.md "Title messages"): messages a
+	// game sends between its own players (NEX Messaging 0x17 / MessageDelivery
+	// 0x1B). A separate kind in a separate table: never in the social chat
+	// (ListMessages, ListConversations, GetMessage never see them), not
+	// friendship-gated (only a block between the two accounts refuses), never
+	// announced on the event stream (instant delivery is the adapter's job),
+	// binary bodies, expiry by lifetime_s, scoped by (title, network).
+	SendTitleMessage(context.Context, *SendTitleMessageRequest) (*SendTitleMessageResponse, error)
+	// A recipient's inbox in one title: to_account or to_room, oldest first.
+	ListTitleMessages(context.Context, *ListTitleMessagesRequest) (*ListTitleMessagesResponse, error)
+	// Deletes messages from a recipient's inbox (ids, or all of it).
+	DeleteTitleMessages(context.Context, *DeleteTitleMessagesRequest) (*DeleteTitleMessagesResponse, error)
 	mustEmbedUnimplementedChatServer()
 }
 
@@ -144,6 +201,15 @@ func (UnimplementedChatServer) ListMessages(context.Context, *ListMessagesReques
 }
 func (UnimplementedChatServer) ListConversations(context.Context, *ListConversationsRequest) (*ListConversationsResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method ListConversations not implemented")
+}
+func (UnimplementedChatServer) SendTitleMessage(context.Context, *SendTitleMessageRequest) (*SendTitleMessageResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method SendTitleMessage not implemented")
+}
+func (UnimplementedChatServer) ListTitleMessages(context.Context, *ListTitleMessagesRequest) (*ListTitleMessagesResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method ListTitleMessages not implemented")
+}
+func (UnimplementedChatServer) DeleteTitleMessages(context.Context, *DeleteTitleMessagesRequest) (*DeleteTitleMessagesResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method DeleteTitleMessages not implemented")
 }
 func (UnimplementedChatServer) mustEmbedUnimplementedChatServer() {}
 func (UnimplementedChatServer) testEmbeddedByValue()              {}
@@ -238,6 +304,60 @@ func _Chat_ListConversations_Handler(srv interface{}, ctx context.Context, dec f
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Chat_SendTitleMessage_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SendTitleMessageRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ChatServer).SendTitleMessage(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Chat_SendTitleMessage_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ChatServer).SendTitleMessage(ctx, req.(*SendTitleMessageRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Chat_ListTitleMessages_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListTitleMessagesRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ChatServer).ListTitleMessages(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Chat_ListTitleMessages_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ChatServer).ListTitleMessages(ctx, req.(*ListTitleMessagesRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Chat_DeleteTitleMessages_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DeleteTitleMessagesRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ChatServer).DeleteTitleMessages(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Chat_DeleteTitleMessages_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ChatServer).DeleteTitleMessages(ctx, req.(*DeleteTitleMessagesRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Chat_ServiceDesc is the grpc.ServiceDesc for Chat service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -260,6 +380,18 @@ var Chat_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ListConversations",
 			Handler:    _Chat_ListConversations_Handler,
+		},
+		{
+			MethodName: "SendTitleMessage",
+			Handler:    _Chat_SendTitleMessage_Handler,
+		},
+		{
+			MethodName: "ListTitleMessages",
+			Handler:    _Chat_ListTitleMessages_Handler,
+		},
+		{
+			MethodName: "DeleteTitleMessages",
+			Handler:    _Chat_DeleteTitleMessages_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

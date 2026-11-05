@@ -33,7 +33,8 @@ type fakeCore struct {
 	accountv1.UnimplementedSocialServer
 	accountv1.UnimplementedEventsServer
 	friends   [][2]string
-	announced []string // "to:subjectID"
+	blocked   [][2]string // [blocker, blocked]
+	announced []string    // "to:subjectID"
 }
 
 func (f *fakeCore) isFriends(a, b string) bool {
@@ -46,6 +47,14 @@ func (f *fakeCore) isFriends(a, b string) bool {
 }
 
 func (f *fakeCore) GetRelationship(_ context.Context, req *accountv1.GetRelationshipRequest) (*accountv1.GetRelationshipResponse, error) {
+	for _, p := range f.blocked {
+		if p[0] == req.GetAccountId() && p[1] == req.GetOtherId() {
+			return &accountv1.GetRelationshipResponse{Relationship: accountv1.Relationship_RELATIONSHIP_BLOCKED_BY_SELF}, nil
+		}
+		if p[1] == req.GetAccountId() && p[0] == req.GetOtherId() {
+			return &accountv1.GetRelationshipResponse{Relationship: accountv1.Relationship_RELATIONSHIP_BLOCKED_BY_OTHER}, nil
+		}
+	}
 	if f.isFriends(req.GetAccountId(), req.GetOtherId()) {
 		return &accountv1.GetRelationshipResponse{Relationship: accountv1.Relationship_RELATIONSHIP_FRIENDS}, nil
 	}
@@ -68,7 +77,7 @@ func setup(t *testing.T) (*api.Server, *fakeCore, string) {
 		t.Fatal(err)
 	}
 	t.Cleanup(pool.Close)
-	if _, err := pool.Exec(context.Background(), `TRUNCATE messages`); err != nil {
+	if _, err := pool.Exec(context.Background(), `TRUNCATE messages, title_messages`); err != nil {
 		t.Fatal(err)
 	}
 
@@ -293,13 +302,28 @@ func TestEraseAccountMessages(t *testing.T) {
 			t.Fatalf("send %v: %d", m, code)
 		}
 	}
-	if code, out := do("DELETE", "/internal/accounts/"+a+"/messages", ""); code != 200 || out["deleted"] != float64(2) {
-		t.Fatalf("erase = %d %v, want 200 deleted 2", code, out)
+	// Title messages: a sent one, a received one, and one between two others
+	// (strangers, so friendship is not asked).
+	for _, m := range [][2]string{{a, c}, {c, a}, {b, c}} {
+		if code, _ := do("POST", "/internal/titles/monster-hunter-4/messages",
+			`{"network":"3ds","from_account":"`+m[0]+`","to_account":"`+m[1]+`","body":"AAE="}`); code != 201 {
+			t.Fatalf("title send %v: %d", m, code)
+		}
+	}
+	if code, _ := do("POST", "/internal/titles/monster-hunter-4/messages",
+		`{"network":"3ds","from_account":"`+a+`","to_room":"gathering:7","body":"AAE="}`); code != 201 {
+		t.Fatalf("title room send: %d", code)
+	}
+	if code, out := do("DELETE", "/internal/accounts/"+a+"/messages", ""); code != 200 || out["deleted"] != float64(2) || out["title_messages_deleted"] != float64(3) {
+		t.Fatalf("erase = %d %v, want 200 deleted 2 title_messages_deleted 3", code, out)
+	}
+	if _, out := do("GET", "/internal/titles/monster-hunter-4/messages?network=3ds&account="+c, ""); out["total"] != float64(1) {
+		t.Fatalf("c's title inbox after erasing a: %v", out)
 	}
 	if _, out := do("GET", "/internal/accounts/"+b+"/conversations", ""); len(out["conversations"].([]any)) != 1 {
 		t.Fatalf("b's conversations after erasing a: %v", out)
 	}
-	if code, out := do("DELETE", "/internal/accounts/"+a+"/messages", ""); code != 200 || out["deleted"] != float64(0) {
+	if code, out := do("DELETE", "/internal/accounts/"+a+"/messages", ""); code != 200 || out["deleted"] != float64(0) || out["title_messages_deleted"] != float64(0) {
 		t.Fatalf("repeat erase = %d %v", code, out)
 	}
 	if code, _ := do("DELETE", "/internal/accounts/not-a-uuid/messages", ""); code != 400 {

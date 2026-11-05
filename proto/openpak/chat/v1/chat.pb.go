@@ -581,6 +581,626 @@ func (x *ListConversationsResponse) GetConversations() []*Conversation {
 	return nil
 }
 
+type TitleMessage struct {
+	state           protoimpl.MessageState `protogen:"open.v1"`
+	Id              int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	Title           string                 `protobuf:"bytes,2,opt,name=title,proto3" json:"title,omitempty"`     // the game's neutral key ("monster-hunter-4")
+	Network         string                 `protobuf:"bytes,3,opt,name=network,proto3" json:"network,omitempty"` // "wiiu", "3ds", ...
+	FromAccount     string                 `protobuf:"bytes,4,opt,name=from_account,json=fromAccount,proto3" json:"from_account,omitempty"`
+	ToAccount       string                 `protobuf:"bytes,5,opt,name=to_account,json=toAccount,proto3" json:"to_account,omitempty"` // exactly one of to_account / to_room is set
+	ToRoom          string                 `protobuf:"bytes,6,opt,name=to_room,json=toRoom,proto3" json:"to_room,omitempty"`          // a game-defined room ("gathering:1234"); readers are the adapter's call
+	Subject         string                 `protobuf:"bytes,7,opt,name=subject,proto3" json:"subject,omitempty"`
+	Body            []byte                 `protobuf:"bytes,8,opt,name=body,proto3" json:"body,omitempty"`
+	BodyKind        string                 `protobuf:"bytes,9,opt,name=body_kind,json=bodyKind,proto3" json:"body_kind,omitempty"`        // "binary" (default) or "text" (UTF-8)
+	SenderName      string                 `protobuf:"bytes,10,opt,name=sender_name,json=senderName,proto3" json:"sender_name,omitempty"` // the sender's in-game name at send time
+	Flags           int64                  `protobuf:"varint,11,opt,name=flags,proto3" json:"flags,omitempty"`                            // the game's own flag word, stored as given
+	ParentId        int64                  `protobuf:"varint,12,opt,name=parent_id,json=parentId,proto3" json:"parent_id,omitempty"`      // 0 = none; a title message id in the same title and network
+	SentAtUnixMs    int64                  `protobuf:"varint,13,opt,name=sent_at_unix_ms,json=sentAtUnixMs,proto3" json:"sent_at_unix_ms,omitempty"`
+	ExpiresAtUnixMs int64                  `protobuf:"varint,14,opt,name=expires_at_unix_ms,json=expiresAtUnixMs,proto3" json:"expires_at_unix_ms,omitempty"`
+	unknownFields   protoimpl.UnknownFields
+	sizeCache       protoimpl.SizeCache
+}
+
+func (x *TitleMessage) Reset() {
+	*x = TitleMessage{}
+	mi := &file_proto_openpak_chat_v1_chat_proto_msgTypes[10]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *TitleMessage) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*TitleMessage) ProtoMessage() {}
+
+func (x *TitleMessage) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_openpak_chat_v1_chat_proto_msgTypes[10]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use TitleMessage.ProtoReflect.Descriptor instead.
+func (*TitleMessage) Descriptor() ([]byte, []int) {
+	return file_proto_openpak_chat_v1_chat_proto_rawDescGZIP(), []int{10}
+}
+
+func (x *TitleMessage) GetId() int64 {
+	if x != nil {
+		return x.Id
+	}
+	return 0
+}
+
+func (x *TitleMessage) GetTitle() string {
+	if x != nil {
+		return x.Title
+	}
+	return ""
+}
+
+func (x *TitleMessage) GetNetwork() string {
+	if x != nil {
+		return x.Network
+	}
+	return ""
+}
+
+func (x *TitleMessage) GetFromAccount() string {
+	if x != nil {
+		return x.FromAccount
+	}
+	return ""
+}
+
+func (x *TitleMessage) GetToAccount() string {
+	if x != nil {
+		return x.ToAccount
+	}
+	return ""
+}
+
+func (x *TitleMessage) GetToRoom() string {
+	if x != nil {
+		return x.ToRoom
+	}
+	return ""
+}
+
+func (x *TitleMessage) GetSubject() string {
+	if x != nil {
+		return x.Subject
+	}
+	return ""
+}
+
+func (x *TitleMessage) GetBody() []byte {
+	if x != nil {
+		return x.Body
+	}
+	return nil
+}
+
+func (x *TitleMessage) GetBodyKind() string {
+	if x != nil {
+		return x.BodyKind
+	}
+	return ""
+}
+
+func (x *TitleMessage) GetSenderName() string {
+	if x != nil {
+		return x.SenderName
+	}
+	return ""
+}
+
+func (x *TitleMessage) GetFlags() int64 {
+	if x != nil {
+		return x.Flags
+	}
+	return 0
+}
+
+func (x *TitleMessage) GetParentId() int64 {
+	if x != nil {
+		return x.ParentId
+	}
+	return 0
+}
+
+func (x *TitleMessage) GetSentAtUnixMs() int64 {
+	if x != nil {
+		return x.SentAtUnixMs
+	}
+	return 0
+}
+
+func (x *TitleMessage) GetExpiresAtUnixMs() int64 {
+	if x != nil {
+		return x.ExpiresAtUnixMs
+	}
+	return 0
+}
+
+type SendTitleMessageRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Title         string                 `protobuf:"bytes,1,opt,name=title,proto3" json:"title,omitempty"`
+	Network       string                 `protobuf:"bytes,2,opt,name=network,proto3" json:"network,omitempty"`
+	FromAccount   string                 `protobuf:"bytes,3,opt,name=from_account,json=fromAccount,proto3" json:"from_account,omitempty"`
+	ToAccount     string                 `protobuf:"bytes,4,opt,name=to_account,json=toAccount,proto3" json:"to_account,omitempty"`
+	ToRoom        string                 `protobuf:"bytes,5,opt,name=to_room,json=toRoom,proto3" json:"to_room,omitempty"`
+	Subject       string                 `protobuf:"bytes,6,opt,name=subject,proto3" json:"subject,omitempty"`
+	Body          []byte                 `protobuf:"bytes,7,opt,name=body,proto3" json:"body,omitempty"`
+	BodyKind      string                 `protobuf:"bytes,8,opt,name=body_kind,json=bodyKind,proto3" json:"body_kind,omitempty"`     // empty = binary
+	LifetimeS     int64                  `protobuf:"varint,9,opt,name=lifetime_s,json=lifetimeS,proto3" json:"lifetime_s,omitempty"` // 0 or above the cap = the cap (30 days)
+	Flags         int64                  `protobuf:"varint,10,opt,name=flags,proto3" json:"flags,omitempty"`
+	ParentId      int64                  `protobuf:"varint,11,opt,name=parent_id,json=parentId,proto3" json:"parent_id,omitempty"`
+	SenderName    string                 `protobuf:"bytes,12,opt,name=sender_name,json=senderName,proto3" json:"sender_name,omitempty"`
+	DedupKey      string                 `protobuf:"bytes,13,opt,name=dedup_key,json=dedupKey,proto3" json:"dedup_key,omitempty"` // optional; sender-scoped idempotency, as SendMessage
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *SendTitleMessageRequest) Reset() {
+	*x = SendTitleMessageRequest{}
+	mi := &file_proto_openpak_chat_v1_chat_proto_msgTypes[11]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SendTitleMessageRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SendTitleMessageRequest) ProtoMessage() {}
+
+func (x *SendTitleMessageRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_openpak_chat_v1_chat_proto_msgTypes[11]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SendTitleMessageRequest.ProtoReflect.Descriptor instead.
+func (*SendTitleMessageRequest) Descriptor() ([]byte, []int) {
+	return file_proto_openpak_chat_v1_chat_proto_rawDescGZIP(), []int{11}
+}
+
+func (x *SendTitleMessageRequest) GetTitle() string {
+	if x != nil {
+		return x.Title
+	}
+	return ""
+}
+
+func (x *SendTitleMessageRequest) GetNetwork() string {
+	if x != nil {
+		return x.Network
+	}
+	return ""
+}
+
+func (x *SendTitleMessageRequest) GetFromAccount() string {
+	if x != nil {
+		return x.FromAccount
+	}
+	return ""
+}
+
+func (x *SendTitleMessageRequest) GetToAccount() string {
+	if x != nil {
+		return x.ToAccount
+	}
+	return ""
+}
+
+func (x *SendTitleMessageRequest) GetToRoom() string {
+	if x != nil {
+		return x.ToRoom
+	}
+	return ""
+}
+
+func (x *SendTitleMessageRequest) GetSubject() string {
+	if x != nil {
+		return x.Subject
+	}
+	return ""
+}
+
+func (x *SendTitleMessageRequest) GetBody() []byte {
+	if x != nil {
+		return x.Body
+	}
+	return nil
+}
+
+func (x *SendTitleMessageRequest) GetBodyKind() string {
+	if x != nil {
+		return x.BodyKind
+	}
+	return ""
+}
+
+func (x *SendTitleMessageRequest) GetLifetimeS() int64 {
+	if x != nil {
+		return x.LifetimeS
+	}
+	return 0
+}
+
+func (x *SendTitleMessageRequest) GetFlags() int64 {
+	if x != nil {
+		return x.Flags
+	}
+	return 0
+}
+
+func (x *SendTitleMessageRequest) GetParentId() int64 {
+	if x != nil {
+		return x.ParentId
+	}
+	return 0
+}
+
+func (x *SendTitleMessageRequest) GetSenderName() string {
+	if x != nil {
+		return x.SenderName
+	}
+	return ""
+}
+
+func (x *SendTitleMessageRequest) GetDedupKey() string {
+	if x != nil {
+		return x.DedupKey
+	}
+	return ""
+}
+
+type SendTitleMessageResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Message       *TitleMessage          `protobuf:"bytes,1,opt,name=message,proto3" json:"message,omitempty"`
+	Duplicate     bool                   `protobuf:"varint,2,opt,name=duplicate,proto3" json:"duplicate,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *SendTitleMessageResponse) Reset() {
+	*x = SendTitleMessageResponse{}
+	mi := &file_proto_openpak_chat_v1_chat_proto_msgTypes[12]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SendTitleMessageResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SendTitleMessageResponse) ProtoMessage() {}
+
+func (x *SendTitleMessageResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_openpak_chat_v1_chat_proto_msgTypes[12]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SendTitleMessageResponse.ProtoReflect.Descriptor instead.
+func (*SendTitleMessageResponse) Descriptor() ([]byte, []int) {
+	return file_proto_openpak_chat_v1_chat_proto_rawDescGZIP(), []int{12}
+}
+
+func (x *SendTitleMessageResponse) GetMessage() *TitleMessage {
+	if x != nil {
+		return x.Message
+	}
+	return nil
+}
+
+func (x *SendTitleMessageResponse) GetDuplicate() bool {
+	if x != nil {
+		return x.Duplicate
+	}
+	return false
+}
+
+type ListTitleMessagesRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Title         string                 `protobuf:"bytes,1,opt,name=title,proto3" json:"title,omitempty"`
+	Network       string                 `protobuf:"bytes,2,opt,name=network,proto3" json:"network,omitempty"`
+	Account       string                 `protobuf:"bytes,3,opt,name=account,proto3" json:"account,omitempty"` // the recipient's inbox; exactly one of account / room
+	Room          string                 `protobuf:"bytes,4,opt,name=room,proto3" json:"room,omitempty"`
+	Offset        int64                  `protobuf:"varint,5,opt,name=offset,proto3" json:"offset,omitempty"`
+	Limit         int32                  `protobuf:"varint,6,opt,name=limit,proto3" json:"limit,omitempty"`                                // server-capped at 200
+	Ids           []int64                `protobuf:"varint,7,rep,packed,name=ids,proto3" json:"ids,omitempty"`                             // optional: only these ids (still inside the inbox)
+	HeadersOnly   bool                   `protobuf:"varint,8,opt,name=headers_only,json=headersOnly,proto3" json:"headers_only,omitempty"` // leave body empty
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListTitleMessagesRequest) Reset() {
+	*x = ListTitleMessagesRequest{}
+	mi := &file_proto_openpak_chat_v1_chat_proto_msgTypes[13]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListTitleMessagesRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListTitleMessagesRequest) ProtoMessage() {}
+
+func (x *ListTitleMessagesRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_openpak_chat_v1_chat_proto_msgTypes[13]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListTitleMessagesRequest.ProtoReflect.Descriptor instead.
+func (*ListTitleMessagesRequest) Descriptor() ([]byte, []int) {
+	return file_proto_openpak_chat_v1_chat_proto_rawDescGZIP(), []int{13}
+}
+
+func (x *ListTitleMessagesRequest) GetTitle() string {
+	if x != nil {
+		return x.Title
+	}
+	return ""
+}
+
+func (x *ListTitleMessagesRequest) GetNetwork() string {
+	if x != nil {
+		return x.Network
+	}
+	return ""
+}
+
+func (x *ListTitleMessagesRequest) GetAccount() string {
+	if x != nil {
+		return x.Account
+	}
+	return ""
+}
+
+func (x *ListTitleMessagesRequest) GetRoom() string {
+	if x != nil {
+		return x.Room
+	}
+	return ""
+}
+
+func (x *ListTitleMessagesRequest) GetOffset() int64 {
+	if x != nil {
+		return x.Offset
+	}
+	return 0
+}
+
+func (x *ListTitleMessagesRequest) GetLimit() int32 {
+	if x != nil {
+		return x.Limit
+	}
+	return 0
+}
+
+func (x *ListTitleMessagesRequest) GetIds() []int64 {
+	if x != nil {
+		return x.Ids
+	}
+	return nil
+}
+
+func (x *ListTitleMessagesRequest) GetHeadersOnly() bool {
+	if x != nil {
+		return x.HeadersOnly
+	}
+	return false
+}
+
+type ListTitleMessagesResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Messages      []*TitleMessage        `protobuf:"bytes,1,rep,name=messages,proto3" json:"messages,omitempty"`
+	Total         int64                  `protobuf:"varint,2,opt,name=total,proto3" json:"total,omitempty"` // unexpired messages in the inbox (ignores offset, limit and ids)
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListTitleMessagesResponse) Reset() {
+	*x = ListTitleMessagesResponse{}
+	mi := &file_proto_openpak_chat_v1_chat_proto_msgTypes[14]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListTitleMessagesResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListTitleMessagesResponse) ProtoMessage() {}
+
+func (x *ListTitleMessagesResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_openpak_chat_v1_chat_proto_msgTypes[14]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListTitleMessagesResponse.ProtoReflect.Descriptor instead.
+func (*ListTitleMessagesResponse) Descriptor() ([]byte, []int) {
+	return file_proto_openpak_chat_v1_chat_proto_rawDescGZIP(), []int{14}
+}
+
+func (x *ListTitleMessagesResponse) GetMessages() []*TitleMessage {
+	if x != nil {
+		return x.Messages
+	}
+	return nil
+}
+
+func (x *ListTitleMessagesResponse) GetTotal() int64 {
+	if x != nil {
+		return x.Total
+	}
+	return 0
+}
+
+type DeleteTitleMessagesRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Title         string                 `protobuf:"bytes,1,opt,name=title,proto3" json:"title,omitempty"`
+	Network       string                 `protobuf:"bytes,2,opt,name=network,proto3" json:"network,omitempty"`
+	Account       string                 `protobuf:"bytes,3,opt,name=account,proto3" json:"account,omitempty"` // the recipient's inbox; exactly one of account / room
+	Room          string                 `protobuf:"bytes,4,opt,name=room,proto3" json:"room,omitempty"`
+	Ids           []int64                `protobuf:"varint,5,rep,packed,name=ids,proto3" json:"ids,omitempty"`
+	All           bool                   `protobuf:"varint,6,opt,name=all,proto3" json:"all,omitempty"` // every message in the inbox; ids must be empty
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *DeleteTitleMessagesRequest) Reset() {
+	*x = DeleteTitleMessagesRequest{}
+	mi := &file_proto_openpak_chat_v1_chat_proto_msgTypes[15]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DeleteTitleMessagesRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DeleteTitleMessagesRequest) ProtoMessage() {}
+
+func (x *DeleteTitleMessagesRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_openpak_chat_v1_chat_proto_msgTypes[15]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DeleteTitleMessagesRequest.ProtoReflect.Descriptor instead.
+func (*DeleteTitleMessagesRequest) Descriptor() ([]byte, []int) {
+	return file_proto_openpak_chat_v1_chat_proto_rawDescGZIP(), []int{15}
+}
+
+func (x *DeleteTitleMessagesRequest) GetTitle() string {
+	if x != nil {
+		return x.Title
+	}
+	return ""
+}
+
+func (x *DeleteTitleMessagesRequest) GetNetwork() string {
+	if x != nil {
+		return x.Network
+	}
+	return ""
+}
+
+func (x *DeleteTitleMessagesRequest) GetAccount() string {
+	if x != nil {
+		return x.Account
+	}
+	return ""
+}
+
+func (x *DeleteTitleMessagesRequest) GetRoom() string {
+	if x != nil {
+		return x.Room
+	}
+	return ""
+}
+
+func (x *DeleteTitleMessagesRequest) GetIds() []int64 {
+	if x != nil {
+		return x.Ids
+	}
+	return nil
+}
+
+func (x *DeleteTitleMessagesRequest) GetAll() bool {
+	if x != nil {
+		return x.All
+	}
+	return false
+}
+
+type DeleteTitleMessagesResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Deleted       int64                  `protobuf:"varint,1,opt,name=deleted,proto3" json:"deleted,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *DeleteTitleMessagesResponse) Reset() {
+	*x = DeleteTitleMessagesResponse{}
+	mi := &file_proto_openpak_chat_v1_chat_proto_msgTypes[16]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DeleteTitleMessagesResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DeleteTitleMessagesResponse) ProtoMessage() {}
+
+func (x *DeleteTitleMessagesResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_openpak_chat_v1_chat_proto_msgTypes[16]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DeleteTitleMessagesResponse.ProtoReflect.Descriptor instead.
+func (*DeleteTitleMessagesResponse) Descriptor() ([]byte, []int) {
+	return file_proto_openpak_chat_v1_chat_proto_rawDescGZIP(), []int{16}
+}
+
+func (x *DeleteTitleMessagesResponse) GetDeleted() int64 {
+	if x != nil {
+		return x.Deleted
+	}
+	return 0
+}
+
 var File_proto_openpak_chat_v1_chat_proto protoreflect.FileDescriptor
 
 const file_proto_openpak_chat_v1_chat_proto_rawDesc = "" +
@@ -623,13 +1243,76 @@ const file_proto_openpak_chat_v1_chat_proto_rawDesc = "" +
 	"\x06newest\x18\x02 \x01(\v2\x18.openpak.chat.v1.MessageR\x06newest\x12!\n" +
 	"\funread_count\x18\x03 \x01(\x03R\vunreadCount\"`\n" +
 	"\x19ListConversationsResponse\x12C\n" +
-	"\rconversations\x18\x01 \x03(\v2\x1d.openpak.chat.v1.ConversationR\rconversations2\x80\x03\n" +
+	"\rconversations\x18\x01 \x03(\v2\x1d.openpak.chat.v1.ConversationR\rconversations\"\x9c\x03\n" +
+	"\fTitleMessage\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\x03R\x02id\x12\x14\n" +
+	"\x05title\x18\x02 \x01(\tR\x05title\x12\x18\n" +
+	"\anetwork\x18\x03 \x01(\tR\anetwork\x12!\n" +
+	"\ffrom_account\x18\x04 \x01(\tR\vfromAccount\x12\x1d\n" +
+	"\n" +
+	"to_account\x18\x05 \x01(\tR\ttoAccount\x12\x17\n" +
+	"\ato_room\x18\x06 \x01(\tR\x06toRoom\x12\x18\n" +
+	"\asubject\x18\a \x01(\tR\asubject\x12\x12\n" +
+	"\x04body\x18\b \x01(\fR\x04body\x12\x1b\n" +
+	"\tbody_kind\x18\t \x01(\tR\bbodyKind\x12\x1f\n" +
+	"\vsender_name\x18\n" +
+	" \x01(\tR\n" +
+	"senderName\x12\x14\n" +
+	"\x05flags\x18\v \x01(\x03R\x05flags\x12\x1b\n" +
+	"\tparent_id\x18\f \x01(\x03R\bparentId\x12%\n" +
+	"\x0fsent_at_unix_ms\x18\r \x01(\x03R\fsentAtUnixMs\x12+\n" +
+	"\x12expires_at_unix_ms\x18\x0e \x01(\x03R\x0fexpiresAtUnixMs\"\xff\x02\n" +
+	"\x17SendTitleMessageRequest\x12\x14\n" +
+	"\x05title\x18\x01 \x01(\tR\x05title\x12\x18\n" +
+	"\anetwork\x18\x02 \x01(\tR\anetwork\x12!\n" +
+	"\ffrom_account\x18\x03 \x01(\tR\vfromAccount\x12\x1d\n" +
+	"\n" +
+	"to_account\x18\x04 \x01(\tR\ttoAccount\x12\x17\n" +
+	"\ato_room\x18\x05 \x01(\tR\x06toRoom\x12\x18\n" +
+	"\asubject\x18\x06 \x01(\tR\asubject\x12\x12\n" +
+	"\x04body\x18\a \x01(\fR\x04body\x12\x1b\n" +
+	"\tbody_kind\x18\b \x01(\tR\bbodyKind\x12\x1d\n" +
+	"\n" +
+	"lifetime_s\x18\t \x01(\x03R\tlifetimeS\x12\x14\n" +
+	"\x05flags\x18\n" +
+	" \x01(\x03R\x05flags\x12\x1b\n" +
+	"\tparent_id\x18\v \x01(\x03R\bparentId\x12\x1f\n" +
+	"\vsender_name\x18\f \x01(\tR\n" +
+	"senderName\x12\x1b\n" +
+	"\tdedup_key\x18\r \x01(\tR\bdedupKey\"q\n" +
+	"\x18SendTitleMessageResponse\x127\n" +
+	"\amessage\x18\x01 \x01(\v2\x1d.openpak.chat.v1.TitleMessageR\amessage\x12\x1c\n" +
+	"\tduplicate\x18\x02 \x01(\bR\tduplicate\"\xdb\x01\n" +
+	"\x18ListTitleMessagesRequest\x12\x14\n" +
+	"\x05title\x18\x01 \x01(\tR\x05title\x12\x18\n" +
+	"\anetwork\x18\x02 \x01(\tR\anetwork\x12\x18\n" +
+	"\aaccount\x18\x03 \x01(\tR\aaccount\x12\x12\n" +
+	"\x04room\x18\x04 \x01(\tR\x04room\x12\x16\n" +
+	"\x06offset\x18\x05 \x01(\x03R\x06offset\x12\x14\n" +
+	"\x05limit\x18\x06 \x01(\x05R\x05limit\x12\x10\n" +
+	"\x03ids\x18\a \x03(\x03R\x03ids\x12!\n" +
+	"\fheaders_only\x18\b \x01(\bR\vheadersOnly\"l\n" +
+	"\x19ListTitleMessagesResponse\x129\n" +
+	"\bmessages\x18\x01 \x03(\v2\x1d.openpak.chat.v1.TitleMessageR\bmessages\x12\x14\n" +
+	"\x05total\x18\x02 \x01(\x03R\x05total\"\x9e\x01\n" +
+	"\x1aDeleteTitleMessagesRequest\x12\x14\n" +
+	"\x05title\x18\x01 \x01(\tR\x05title\x12\x18\n" +
+	"\anetwork\x18\x02 \x01(\tR\anetwork\x12\x18\n" +
+	"\aaccount\x18\x03 \x01(\tR\aaccount\x12\x12\n" +
+	"\x04room\x18\x04 \x01(\tR\x04room\x12\x10\n" +
+	"\x03ids\x18\x05 \x03(\x03R\x03ids\x12\x10\n" +
+	"\x03all\x18\x06 \x01(\bR\x03all\"7\n" +
+	"\x1bDeleteTitleMessagesResponse\x12\x18\n" +
+	"\adeleted\x18\x01 \x01(\x03R\adeleted2\xc7\x05\n" +
 	"\x04Chat\x12X\n" +
 	"\vSendMessage\x12#.openpak.chat.v1.SendMessageRequest\x1a$.openpak.chat.v1.SendMessageResponse\x12U\n" +
 	"\n" +
 	"GetMessage\x12\".openpak.chat.v1.GetMessageRequest\x1a#.openpak.chat.v1.GetMessageResponse\x12[\n" +
 	"\fListMessages\x12$.openpak.chat.v1.ListMessagesRequest\x1a%.openpak.chat.v1.ListMessagesResponse\x12j\n" +
-	"\x11ListConversations\x12).openpak.chat.v1.ListConversationsRequest\x1a*.openpak.chat.v1.ListConversationsResponseB+Z)openpak/chat/proto/openpak/chat/v1;chatv1b\x06proto3"
+	"\x11ListConversations\x12).openpak.chat.v1.ListConversationsRequest\x1a*.openpak.chat.v1.ListConversationsResponse\x12g\n" +
+	"\x10SendTitleMessage\x12(.openpak.chat.v1.SendTitleMessageRequest\x1a).openpak.chat.v1.SendTitleMessageResponse\x12j\n" +
+	"\x11ListTitleMessages\x12).openpak.chat.v1.ListTitleMessagesRequest\x1a*.openpak.chat.v1.ListTitleMessagesResponse\x12p\n" +
+	"\x13DeleteTitleMessages\x12+.openpak.chat.v1.DeleteTitleMessagesRequest\x1a,.openpak.chat.v1.DeleteTitleMessagesResponseB+Z)openpak/chat/proto/openpak/chat/v1;chatv1b\x06proto3"
 
 var (
 	file_proto_openpak_chat_v1_chat_proto_rawDescOnce sync.Once
@@ -643,38 +1326,53 @@ func file_proto_openpak_chat_v1_chat_proto_rawDescGZIP() []byte {
 	return file_proto_openpak_chat_v1_chat_proto_rawDescData
 }
 
-var file_proto_openpak_chat_v1_chat_proto_msgTypes = make([]protoimpl.MessageInfo, 10)
+var file_proto_openpak_chat_v1_chat_proto_msgTypes = make([]protoimpl.MessageInfo, 17)
 var file_proto_openpak_chat_v1_chat_proto_goTypes = []any{
-	(*Message)(nil),                   // 0: openpak.chat.v1.Message
-	(*SendMessageRequest)(nil),        // 1: openpak.chat.v1.SendMessageRequest
-	(*SendMessageResponse)(nil),       // 2: openpak.chat.v1.SendMessageResponse
-	(*GetMessageRequest)(nil),         // 3: openpak.chat.v1.GetMessageRequest
-	(*GetMessageResponse)(nil),        // 4: openpak.chat.v1.GetMessageResponse
-	(*ListMessagesRequest)(nil),       // 5: openpak.chat.v1.ListMessagesRequest
-	(*ListMessagesResponse)(nil),      // 6: openpak.chat.v1.ListMessagesResponse
-	(*ListConversationsRequest)(nil),  // 7: openpak.chat.v1.ListConversationsRequest
-	(*Conversation)(nil),              // 8: openpak.chat.v1.Conversation
-	(*ListConversationsResponse)(nil), // 9: openpak.chat.v1.ListConversationsResponse
+	(*Message)(nil),                     // 0: openpak.chat.v1.Message
+	(*SendMessageRequest)(nil),          // 1: openpak.chat.v1.SendMessageRequest
+	(*SendMessageResponse)(nil),         // 2: openpak.chat.v1.SendMessageResponse
+	(*GetMessageRequest)(nil),           // 3: openpak.chat.v1.GetMessageRequest
+	(*GetMessageResponse)(nil),          // 4: openpak.chat.v1.GetMessageResponse
+	(*ListMessagesRequest)(nil),         // 5: openpak.chat.v1.ListMessagesRequest
+	(*ListMessagesResponse)(nil),        // 6: openpak.chat.v1.ListMessagesResponse
+	(*ListConversationsRequest)(nil),    // 7: openpak.chat.v1.ListConversationsRequest
+	(*Conversation)(nil),                // 8: openpak.chat.v1.Conversation
+	(*ListConversationsResponse)(nil),   // 9: openpak.chat.v1.ListConversationsResponse
+	(*TitleMessage)(nil),                // 10: openpak.chat.v1.TitleMessage
+	(*SendTitleMessageRequest)(nil),     // 11: openpak.chat.v1.SendTitleMessageRequest
+	(*SendTitleMessageResponse)(nil),    // 12: openpak.chat.v1.SendTitleMessageResponse
+	(*ListTitleMessagesRequest)(nil),    // 13: openpak.chat.v1.ListTitleMessagesRequest
+	(*ListTitleMessagesResponse)(nil),   // 14: openpak.chat.v1.ListTitleMessagesResponse
+	(*DeleteTitleMessagesRequest)(nil),  // 15: openpak.chat.v1.DeleteTitleMessagesRequest
+	(*DeleteTitleMessagesResponse)(nil), // 16: openpak.chat.v1.DeleteTitleMessagesResponse
 }
 var file_proto_openpak_chat_v1_chat_proto_depIdxs = []int32{
-	0, // 0: openpak.chat.v1.SendMessageResponse.message:type_name -> openpak.chat.v1.Message
-	0, // 1: openpak.chat.v1.GetMessageResponse.message:type_name -> openpak.chat.v1.Message
-	0, // 2: openpak.chat.v1.ListMessagesResponse.messages:type_name -> openpak.chat.v1.Message
-	0, // 3: openpak.chat.v1.Conversation.newest:type_name -> openpak.chat.v1.Message
-	8, // 4: openpak.chat.v1.ListConversationsResponse.conversations:type_name -> openpak.chat.v1.Conversation
-	1, // 5: openpak.chat.v1.Chat.SendMessage:input_type -> openpak.chat.v1.SendMessageRequest
-	3, // 6: openpak.chat.v1.Chat.GetMessage:input_type -> openpak.chat.v1.GetMessageRequest
-	5, // 7: openpak.chat.v1.Chat.ListMessages:input_type -> openpak.chat.v1.ListMessagesRequest
-	7, // 8: openpak.chat.v1.Chat.ListConversations:input_type -> openpak.chat.v1.ListConversationsRequest
-	2, // 9: openpak.chat.v1.Chat.SendMessage:output_type -> openpak.chat.v1.SendMessageResponse
-	4, // 10: openpak.chat.v1.Chat.GetMessage:output_type -> openpak.chat.v1.GetMessageResponse
-	6, // 11: openpak.chat.v1.Chat.ListMessages:output_type -> openpak.chat.v1.ListMessagesResponse
-	9, // 12: openpak.chat.v1.Chat.ListConversations:output_type -> openpak.chat.v1.ListConversationsResponse
-	9, // [9:13] is the sub-list for method output_type
-	5, // [5:9] is the sub-list for method input_type
-	5, // [5:5] is the sub-list for extension type_name
-	5, // [5:5] is the sub-list for extension extendee
-	0, // [0:5] is the sub-list for field type_name
+	0,  // 0: openpak.chat.v1.SendMessageResponse.message:type_name -> openpak.chat.v1.Message
+	0,  // 1: openpak.chat.v1.GetMessageResponse.message:type_name -> openpak.chat.v1.Message
+	0,  // 2: openpak.chat.v1.ListMessagesResponse.messages:type_name -> openpak.chat.v1.Message
+	0,  // 3: openpak.chat.v1.Conversation.newest:type_name -> openpak.chat.v1.Message
+	8,  // 4: openpak.chat.v1.ListConversationsResponse.conversations:type_name -> openpak.chat.v1.Conversation
+	10, // 5: openpak.chat.v1.SendTitleMessageResponse.message:type_name -> openpak.chat.v1.TitleMessage
+	10, // 6: openpak.chat.v1.ListTitleMessagesResponse.messages:type_name -> openpak.chat.v1.TitleMessage
+	1,  // 7: openpak.chat.v1.Chat.SendMessage:input_type -> openpak.chat.v1.SendMessageRequest
+	3,  // 8: openpak.chat.v1.Chat.GetMessage:input_type -> openpak.chat.v1.GetMessageRequest
+	5,  // 9: openpak.chat.v1.Chat.ListMessages:input_type -> openpak.chat.v1.ListMessagesRequest
+	7,  // 10: openpak.chat.v1.Chat.ListConversations:input_type -> openpak.chat.v1.ListConversationsRequest
+	11, // 11: openpak.chat.v1.Chat.SendTitleMessage:input_type -> openpak.chat.v1.SendTitleMessageRequest
+	13, // 12: openpak.chat.v1.Chat.ListTitleMessages:input_type -> openpak.chat.v1.ListTitleMessagesRequest
+	15, // 13: openpak.chat.v1.Chat.DeleteTitleMessages:input_type -> openpak.chat.v1.DeleteTitleMessagesRequest
+	2,  // 14: openpak.chat.v1.Chat.SendMessage:output_type -> openpak.chat.v1.SendMessageResponse
+	4,  // 15: openpak.chat.v1.Chat.GetMessage:output_type -> openpak.chat.v1.GetMessageResponse
+	6,  // 16: openpak.chat.v1.Chat.ListMessages:output_type -> openpak.chat.v1.ListMessagesResponse
+	9,  // 17: openpak.chat.v1.Chat.ListConversations:output_type -> openpak.chat.v1.ListConversationsResponse
+	12, // 18: openpak.chat.v1.Chat.SendTitleMessage:output_type -> openpak.chat.v1.SendTitleMessageResponse
+	14, // 19: openpak.chat.v1.Chat.ListTitleMessages:output_type -> openpak.chat.v1.ListTitleMessagesResponse
+	16, // 20: openpak.chat.v1.Chat.DeleteTitleMessages:output_type -> openpak.chat.v1.DeleteTitleMessagesResponse
+	14, // [14:21] is the sub-list for method output_type
+	7,  // [7:14] is the sub-list for method input_type
+	7,  // [7:7] is the sub-list for extension type_name
+	7,  // [7:7] is the sub-list for extension extendee
+	0,  // [0:7] is the sub-list for field type_name
 }
 
 func init() { file_proto_openpak_chat_v1_chat_proto_init() }
@@ -688,7 +1386,7 @@ func file_proto_openpak_chat_v1_chat_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_proto_openpak_chat_v1_chat_proto_rawDesc), len(file_proto_openpak_chat_v1_chat_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   10,
+			NumMessages:   17,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

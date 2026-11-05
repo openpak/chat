@@ -24,6 +24,19 @@ service Chat {
   rpc ListMessages(ListMessagesRequest) returns (ListMessagesResponse);
   // One row per peer, newest message per peer.
   rpc ListConversations(ListConversationsRequest) returns (ListConversationsResponse);
+
+  // Title messages (gap M1-M5, docs/protocol.md "Title messages"): messages a
+  // game sends between its own players (NEX Messaging 0x17 / MessageDelivery
+  // 0x1B). A separate kind in a separate table: never in the social chat
+  // (ListMessages, ListConversations, GetMessage never see them), not
+  // friendship-gated (only a block between the two accounts refuses), never
+  // announced on the event stream (instant delivery is the adapter's job),
+  // binary bodies, expiry by lifetime_s, scoped by (title, network).
+  rpc SendTitleMessage(SendTitleMessageRequest) returns (SendTitleMessageResponse);
+  // A recipient's inbox in one title: to_account or to_room, oldest first.
+  rpc ListTitleMessages(ListTitleMessagesRequest) returns (ListTitleMessagesResponse);
+  // Deletes messages from a recipient's inbox (ids, or all of it).
+  rpc DeleteTitleMessages(DeleteTitleMessagesRequest) returns (DeleteTitleMessagesResponse);
 }
 
 message Message {
@@ -79,4 +92,71 @@ message Conversation {
 
 message ListConversationsResponse {
   repeated Conversation conversations = 1;
+}
+
+message TitleMessage {
+  int64  id            = 1;
+  string title         = 2;  // the game's neutral key ("monster-hunter-4")
+  string network       = 3;  // "wiiu", "3ds", ...
+  string from_account  = 4;
+  string to_account    = 5;  // exactly one of to_account / to_room is set
+  string to_room       = 6;  // a game-defined room ("gathering:1234"); readers are the adapter's call
+  string subject       = 7;
+  bytes  body          = 8;
+  string body_kind     = 9;  // "binary" (default) or "text" (UTF-8)
+  string sender_name   = 10; // the sender's in-game name at send time
+  int64  flags         = 11; // the game's own flag word, stored as given
+  int64  parent_id     = 12; // 0 = none; a title message id in the same title and network
+  int64  sent_at_unix_ms    = 13;
+  int64  expires_at_unix_ms = 14;
+}
+
+message SendTitleMessageRequest {
+  string title        = 1;
+  string network      = 2;
+  string from_account = 3;
+  string to_account   = 4;
+  string to_room      = 5;
+  string subject      = 6;
+  bytes  body         = 7;
+  string body_kind    = 8;  // empty = binary
+  int64  lifetime_s   = 9;  // 0 or above the cap = the cap (30 days)
+  int64  flags        = 10;
+  int64  parent_id    = 11;
+  string sender_name  = 12;
+  string dedup_key    = 13; // optional; sender-scoped idempotency, as SendMessage
+}
+
+message SendTitleMessageResponse {
+  TitleMessage message = 1;
+  bool duplicate       = 2;
+}
+
+message ListTitleMessagesRequest {
+  string title   = 1;
+  string network = 2;
+  string account = 3; // the recipient's inbox; exactly one of account / room
+  string room    = 4;
+  int64  offset  = 5;
+  int32  limit   = 6; // server-capped at 200
+  repeated int64 ids = 7; // optional: only these ids (still inside the inbox)
+  bool   headers_only = 8; // leave body empty
+}
+
+message ListTitleMessagesResponse {
+  repeated TitleMessage messages = 1;
+  int64 total = 2; // unexpired messages in the inbox (ignores offset, limit and ids)
+}
+
+message DeleteTitleMessagesRequest {
+  string title   = 1;
+  string network = 2;
+  string account = 3; // the recipient's inbox; exactly one of account / room
+  string room    = 4;
+  repeated int64 ids = 5;
+  bool   all     = 6; // every message in the inbox; ids must be empty
+}
+
+message DeleteTitleMessagesResponse {
+  int64 deleted = 1;
 }

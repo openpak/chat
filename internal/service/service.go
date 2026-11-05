@@ -34,6 +34,10 @@ var (
 type Service struct {
 	Store *pgxpool.Pool
 	Core  *core.Client
+	// TitleRatePerMinute caps title messages per sender (0 = the default).
+	TitleRatePerMinute int
+
+	limiter rateLimiter
 }
 
 // Send applies the rules, stores, and announces. duplicate is true when the
@@ -96,10 +100,11 @@ func (s *Service) Conversations(ctx context.Context, account string) ([]store.Co
 
 var uuidRE = regexp.MustCompile(`^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$`)
 
-// EraseAccount deletes every message to or from the account. Idempotent.
-func (s *Service) EraseAccount(ctx context.Context, account string) (int64, error) {
+// EraseAccount deletes every message to or from the account, social and title
+// messages both, and returns the two counts. Idempotent.
+func (s *Service) EraseAccount(ctx context.Context, account string) (messages, titleMessages int64, err error) {
 	if !uuidRE.MatchString(account) {
-		return 0, ErrBadAccount
+		return 0, 0, ErrBadAccount
 	}
 	return store.DeleteForAccount(ctx, s.Store, account)
 }

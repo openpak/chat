@@ -11,6 +11,8 @@ import (
 	"net"
 	"net/http"
 	"os"
+	"strconv"
+	"time"
 
 	"google.golang.org/grpc"
 
@@ -46,6 +48,11 @@ func main() {
 	}
 
 	svc := &service.Service{Store: pool, Core: coreClient}
+	if n, err := strconv.Atoi(os.Getenv("CHAT_TITLE_RATE_PER_MIN")); err == nil && n > 0 {
+		svc.TitleRatePerMinute = n
+	}
+	// Expired title messages are already invisible; this deletes them.
+	go svc.CollectTitleGarbage(ctx, 10*time.Minute)
 	internalKey := os.Getenv("CHAT_INTERNAL_KEY")
 
 	// HTTP: the website's surface.

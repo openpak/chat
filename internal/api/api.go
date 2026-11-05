@@ -6,7 +6,8 @@
 //	GET  /internal/accounts/{account}/messages/{peer}?after=&limit=   history, oldest first
 //	POST /internal/accounts/{account}/messages/{peer}          {"body","kind","dedup_key"} -> 201
 //	GET  /internal/messages/{id}                               one message
-//	DELETE /internal/accounts/{account}/messages               account erasure: every message to or from it -> 200 {"deleted":n}
+//	DELETE /internal/accounts/{account}/messages               account erasure: every message to or from it -> 200 {"deleted":n,"title_messages_deleted":m}
+//	POST/GET /internal/titles/{title}/messages[...]            title messages (title.go)
 //	GET  /healthz
 package api
 
@@ -33,6 +34,7 @@ func (s *Server) Register(mux *http.ServeMux) {
 	a("POST /internal/accounts/{account}/messages/{peer}", s.send)
 	a("GET /internal/messages/{id}", s.message)
 	a("DELETE /internal/accounts/{account}/messages", s.eraseAccount)
+	s.registerTitle(a)
 	mux.HandleFunc("GET /healthz", func(w http.ResponseWriter, _ *http.Request) { w.WriteHeader(200) })
 }
 
@@ -149,10 +151,11 @@ func (s *Server) message(w http.ResponseWriter, r *http.Request) {
 // eraseAccount is the account-erasure finaliser's call once the deletion
 // grace period is over; nothing user-facing reaches it. A repeat is a 200.
 func (s *Server) eraseAccount(w http.ResponseWriter, r *http.Request) {
-	n, err := s.Svc.EraseAccount(r.Context(), r.PathValue("account"))
+	n, tn, err := s.Svc.EraseAccount(r.Context(), r.PathValue("account"))
 	if err != nil {
 		failWith(w, err)
 		return
 	}
-	jsonOut(w, 200, map[string]any{"deleted": n})
+	// "deleted" keeps its meaning (social messages); title messages count apart.
+	jsonOut(w, 200, map[string]any{"deleted": n, "title_messages_deleted": tn})
 }

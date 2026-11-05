@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -38,9 +39,11 @@ func DB(ctx context.Context, url string) (*pgxpool.Pool, error) {
 		pool.Close()
 		return nil, err
 	}
-	if _, err := pool.Exec(ctx, schema); err != nil {
-		pool.Close()
-		return nil, err
+	for _, ddl := range []string{schema, titleSchema} {
+		if _, err := pool.Exec(ctx, ddl); err != nil {
+			pool.Close()
+			return nil, err
+		}
 	}
 	return pool, nil
 }
@@ -190,15 +193,37 @@ func Conversations(ctx context.Context, q pgxQuerier, account string) ([]Convers
 	return out, nil
 }
 
-// pgxQuerier is what pgxpool.Pool and pgx.Tx both satisfy.
 // DeleteForAccount erases every message the account sent or received (account
-// erasure): a conversation with an erased account goes from both sides.
-func DeleteForAccount(ctx context.Context, pool *pgxpool.Pool, account string) (int64, error) {
-	tag, err := pool.Exec(ctx, `DELETE FROM messages WHERE from_account = $1 OR to_account = $1`, account)
-	return tag.RowsAffected(), err
+// erasure): a conversation with an erased account goes from both sides. Title
+// messages sent by or addressed to the account go in the same transaction;
+// the two counts come back separately.
+func DeleteForAccount(ctx context.Context, pool *pgxpool.Pool, account string) (messages, titleMessages int64, err error) {
+	tx, err := pool.Begin(ctx)
+	if err != nil {
+		return 0, 0, err
+	}
+	defer tx.Rollback(ctx)
+	tag, err := tx.Exec(ctx, `DELETE FROM messages WHERE from_account = $1 OR to_account = $1`, account)
+	if err != nil {
+		return 0, 0, err
+	}
+	ttag, err := tx.Exec(ctx, `DELETE FROM title_messages WHERE from_account = $1 OR to_account = $1`, account)
+	if err != nil {
+		return 0, 0, err
+	}
+	if err := tx.Commit(ctx); err != nil {
+		return 0, 0, err
+	}
+	return tag.RowsAffected(), ttag.RowsAffected(), nil
 }
+
+// pgxQuerier is what pgxpool.Pool and pgx.Tx both satisfy.
 
 type pgxQuerier interface {
 	QueryRow(ctx context.Context, sql string, args ...any) pgx.Row
 	Query(ctx context.Context, sql string, args ...any) (pgx.Rows, error)
+}
+
+type pgxExecer interface {
+	Exec(ctx context.Context, sql string, args ...any) (pgconn.CommandTag, error)
 }

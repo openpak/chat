@@ -72,3 +72,20 @@ func (c *Client) Announce(ctx context.Context, messageID int64, toAccount string
 	})
 	return err
 }
+
+// Blocked answers whether either account has blocked the other in the core's
+// graph: the one block list every console's own block list is part of. Title
+// messages are refused on it; friendship is not asked.
+func (c *Client) Blocked(ctx context.Context, a, b string) (bool, error) {
+	rctx, cancel := context.WithTimeout(c.ctx(ctx), 5*time.Second)
+	defer cancel()
+	rel, err := c.social.GetRelationship(rctx, &accountv1.GetRelationshipRequest{AccountId: a, OtherId: b})
+	if err != nil {
+		return false, err
+	}
+	switch rel.GetRelationship() {
+	case accountv1.Relationship_RELATIONSHIP_BLOCKED_BY_SELF, accountv1.Relationship_RELATIONSHIP_BLOCKED_BY_OTHER:
+		return true, nil
+	}
+	return false, nil
+}
